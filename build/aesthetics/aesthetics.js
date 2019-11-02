@@ -1,24 +1,5 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Structure</title>
-    <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-        cursor: none;
-      }
-      canvas {
-        width: 100%;
-        height: 100%
-      }
-    </style>
-  </head>
-  <body>
-    <script src="../three.min.js"></script>
-    <script>
+// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&dn=gpl-3.0.txt GPL-v3-or-Later
+
 const randomFloat = (low, high) => {
   const range = high - low;
   return low + (Math.random() * range);
@@ -30,17 +11,14 @@ const randomInt = (low, high) => {
 };
 
 class Appearance {
-  constructor () {
-    this.col = {
-      r: Math.random(),
-      g: Math.random(),
-      b: Math.random(),
-      a: 0.5
-    };
-  }
-  
   fill () {
-    return this.col;
+    // Not actually black, otherwise 3d shapes are featureless
+    return {
+      r: 0.2,
+      g: 0.2,
+      b: 0.2,
+      a: 1.0
+    };
   }
 
   stroke () {
@@ -69,14 +47,11 @@ class Form {
     }
     const material = new THREE.MeshStandardMaterial(materialProperties);
     this.mesh = new THREE.Mesh(geometry, material);
-    //FIXME: CAMERA!!!!
-    this.mesh.rotateX(Math.PI / 8.0);
-    this.mesh.rotateY(Math.PI / 8.0);
   }
 
-  setState(x, y, z, size, visible) {
+  setState(x, y, z, size) {
     // Lazily add ourselves to the scene to avoid appearing as a unit cube.
-    // Setting size zero doesn't seem to be working...
+    // Setting size zero doesn't work.
     if (! this.active) {
       this.scene.add(this.mesh);
       this.active = true;
@@ -136,10 +111,6 @@ class Behaviour {
     const scale_factor = this.scaleFactor(t); 
     if (scale_factor === 0) {
       return; 
-    }
-    const side_length = this.size * scale_factor;
-    if (side_length > this.size) {
-      side_length = this.size;
     }
     form.setState(
       this.x * scale_factor,
@@ -207,7 +178,7 @@ class Sequence {
 	    new Behaviour(
    	      randomFloat(this.min_object_x, this.max_object_x),
    	      randomFloat(this.min_object_y, this.max_object_y), 
-   	      0.0, //randomFloat(this.min_object_z, this.max_object_z), 
+   	      randomFloat(this.min_object_z, this.max_object_z), 
    	      randomFloat(this.min_object_size, this.max_object_size), 
 	      start_growing + (growing_range * t_factor),
 	      stop_growing,
@@ -248,25 +219,53 @@ class Sequence {
 
 /* global performance Sequence THREE */
 
+let camera;
+let renderer;
+
 const main = () => {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xffffff);
-  const camera = new THREE.PerspectiveCamera(
-    75,
+  camera = new THREE.PerspectiveCamera(
+    50, // 75
     window.innerWidth / window.innerHeight,
     0.1,
     1000
   );
   // translate (width / 2.0, height / 2.0, - (max (width, height) * 0.4));
-  camera.position.z = 4.0;
+  camera.position.z = 8.0;
+  camera.position.x = -4.0;
+  camera.position.y = 4.0;
+  // Fudge to horizontally centre and almost vertically centre (low) cubes
+  camera.lookAt(0.25, -0.25, 0.0);
   // ambientLight (245, 245, 245);
-  const ambientLight = new THREE.AmbientLight(0xfefefe);
+  const ambientLight = new THREE.AmbientLight(0xf5f5f5);
   scene.add(ambientLight);
-  // directionalLight (50, 50, 50, 0, 1, -1);
+  //directionalLight (50, 50, 50, 0, 1, -1);
+  // Much brighter and slightly different angle for similar effect to P3D 
   const directionalLight = new THREE.DirectionalLight(0xffffff, 0.9);
-  directionalLight.position.set(-2.5, 5, 10);
+  directionalLight.position.set(0, 5, 5);
   scene.add(directionalLight);
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  // For debugging.
+  // The X axis is red. The Y axis is green. The Z axis is blue.
+  /*var axesHelper = new THREE.AxesHelper(5);
+    scene.add(axesHelper);*/
+  // Also debugging
+  /*{
+    const geometry = new THREE.BoxGeometry(1.0, 1.0, 1.0);
+    const materialProperties = {
+      color: new THREE.Color(1.0, 0.0, 0.0),
+      transparent: true,
+      opacity: 0.5
+    };
+    const material = new THREE.MeshStandardMaterial(materialProperties);
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.scale.set(4.0, 4.0, 4.0);
+    //FIXME: move the camera instead.
+    //mesh.rotateX(Math.PI / 8.0);
+    //mesh.rotateY(Math.PI / 8.0);
+    scene.add(mesh);
+  }*/
+  renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild( renderer.domElement );
   const sequence = new Sequence(scene, performance.now());
@@ -278,8 +277,13 @@ const main = () => {
   requestAnimationFrame(animate);
 };
 
-window.onload = main;
+function resize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
 
-    </script>
-  </body>
-<html>
+window.onload = main;
+window.addEventListener('resize', resize, false);
+
+// @license-end

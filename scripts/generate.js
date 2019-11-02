@@ -7,9 +7,11 @@ const BUILD_DIR = path.resolve(__dirname, '../build');
 const OUT_PAGE = 'index.html';
 const LIST_PAGE = path.join(BUILD_DIR, 'index.html');
 const THREE_SRC_FILE = path.join(SRC_DIR, '3d', 'three.min.js');
-const THREE_BUILD_FILE = path.join(BUILD_DIR, 'three.min.js');
+const THREE_BUILD_FILE = path.join(BUILD_DIR, 'js', 'three.min.js');
 const BULMA_SRC_FILE = path.join(SRC_DIR, 'bulma.min.css');
-const BULMA_BUILD_FILE = path.join(BUILD_DIR, 'bulma.min.css');
+const BULMA_BUILD_FILE = path.join(BUILD_DIR, 'css', 'bulma.min.css');
+const CSS_3D_SRC_FILE = path.join(SRC_DIR, '3d', 'style-3d.css');
+const CSS_3D_BUILD_FILE = path.join(BUILD_DIR, 'css', 'style-3d.css');
 
 const APPEARANCE_DIR = path.join(SRC_DIR, 'appearance');
 const FORM_DIR = path.join(SRC_DIR, 'form');
@@ -33,21 +35,25 @@ const LIST_PAGE_HTML = fs
 // Keys are slugs / basenames for files
 
 const WORKS = {
-  "ghosts": ["white", "cube", "burst", "sequential"],
-  "seance": ["white", "cube", "cluster", "sequential"],
+  "subjects": ["white", "cube", "burst", "sequential"],
+  "ghosts": ["white", "cube", "cluster", "sequential"],
   "aesthetics": ["black", "cube", "burst", "sequential"],
   "market": ["black", "cube", "cluster", "sequential"],
   "citizens": ["polychrome", "cube", "burst", "sequential"],
-  "come_together": ["polychrome", "cube", "cluster", "sequential"],
+  "allies": ["polychrome", "cube", "cluster", "sequential"],
   "architecture": ["neoplastic", "cube", "burst", "sequential"],
   "society": ["neoplastic", "cube", "cluster", "sequential"],
-  "monopoly": ["transparent_black", "cube", "burst", "sequential"],
+  // The transparent ones don't look good with THREE.js
+  /*"monopoly": ["transparent_black", "cube", "burst", "sequential"],
   "ideology": ["transparent_black", "cube", "cluster", "sequential"],
   "structure": ["transparent_polychrome", "cube", "burst", "sequential"],
   "psychogeography": ["transparent_polychrome", "cube", "cluster",
-                      "sequential"],
+                      "sequential"],*/
   "congress": ["flesh", "cube", "burst", "sequential"],
   "dance": ["flesh", "cube", "cluster", "sequential"],
+  "xeno": ["green", "cube", "burst", "sequential"],
+  "trolls": ["red", "cube", "cluster", "sequential"],
+  // I've gone off the 2D ones
   /*"subjects": ["white", "square", "burst", "sequential"],
   "logistics": ["white", "square", "cluster", "sequential"],
   "sometimes": ["white", "circle", "burst", "sequential"],
@@ -107,6 +113,12 @@ const workPagePath = workName => path.join(
   OUT_PAGE
 );
 
+const workScriptPath = workName => path.join(
+  BUILD_DIR,
+  workName,
+  `${workName}.js`
+);
+
 const workIs3d = spec => FORMS[spec[1]].match(/Like\s+That:\s+3d/);
 
 const sequenceJsForForm = (sequence, is3d) => {
@@ -133,7 +145,7 @@ const htmlForWork = is3d => {
   }
 };
 
-const buildWorkJS = (spec, is3d) => {
+const buildWorkScript = (spec, is3d) => {
   const app = APPEARANCES[spec[0]];
   const form = FORMS[spec[1]];
   const behav = BEHAVIOURS[spec[2]];
@@ -149,13 +161,14 @@ const capitalize = workName => workName
 
 const buildWorkPage = (workName, spec, is3d) => `${htmlForWork(is3d)}`
       .replace('{{title}}', capitalize(workName))
-      .replace('{{script}}', buildWorkJS(spec, is3d));
+      .replace('{{script-path}}', `./${workName}.js`);
 
 const buildWork = workName => {
   const spec = WORKS[workName];
   const is3d = workIs3d(spec);
   fs.mkdirSync(workDirPath(workName), { recursive: true });
   fs.writeFileSync(workPagePath(workName), buildWorkPage(workName, spec, is3d));
+  fs.writeFileSync(workScriptPath(workName), buildWorkScript(spec, is3d));
 };
 
 const buildListPage = list => {
@@ -164,14 +177,21 @@ const buildListPage = list => {
 
 const buildWorks = () => {
   let list = '';
+  console.log('Building:');
   Object.keys(WORKS).forEach(workName => {
-    console.log(workName);
+    console.log('  ', workName);
     buildWork(workName);
-    list += `    <p><a href="${workPagePath(workName)}">${capitalize(workName)}</a> (${WORKS[workName].join(', ').replace('_', ' ')})</p>\n`;
+    list += `        <p><a href="${workPagePath(workName)}">${capitalize(workName)}</a> (${WORKS[workName].join(', ').replace('_', ' ')})</p>\n`;
   });
   buildListPage(list);
+  fs.mkdirSync(path.join(BUILD_DIR, 'js'), { recursive: true });
   fs.copyFileSync(THREE_SRC_FILE, THREE_BUILD_FILE);
+  fs.mkdirSync(path.join(BUILD_DIR, 'css'), { recursive: true });
   fs.copyFileSync(BULMA_SRC_FILE, BULMA_BUILD_FILE);
+  fs.copyFileSync(CSS_3D_SRC_FILE, CSS_3D_BUILD_FILE);
+  console.log('Done.');
+  // An extra newline looks better with npm run to balance the whitespace above.
+  console.log();
 };
 
 buildWorks();

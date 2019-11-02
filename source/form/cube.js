@@ -19,14 +19,11 @@ class Form {
     }
     const material = new THREE.MeshStandardMaterial(materialProperties);
     this.mesh = new THREE.Mesh(geometry, material);
-    //FIXME: CAMERA!!!!
-    this.mesh.rotateX(Math.PI / 8.0);
-    this.mesh.rotateY(Math.PI / 8.0);
   }
 
-  setState(x, y, z, size, visible) {
+  setState(x, y, z, size) {
     // Lazily add ourselves to the scene to avoid appearing as a unit cube.
-    // Setting size zero doesn't seem to be working...
+    // Setting size zero doesn't work.
     if (! this.active) {
       this.scene.add(this.mesh);
       this.active = true;

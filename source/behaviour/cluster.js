@@ -38,15 +38,12 @@ class Behaviour {
     if (scale_factor === 0) {
       return; 
     }
-    const side_length = this.size * scale_factor;
-    if (side_length > this.size) {
-      side_length = this.size;
-    }
+    const inverse_nonzero_scale_factor = 1.0 / (scale_factor + 0.00001);
     form.setState(
-      this.x * (1.0 / (scale_factor + 0.00001)),
-      this.y * (1.0 / (scale_factor + 0.00001)),
-      this.z * (1.0 / (scale_factor + 0.00001)),
-      this.size * (1.0 / (scale_factor + 0.00001))
+      this.x * inverse_nonzero_scale_factor,
+      this.y * inverse_nonzero_scale_factor,
+      this.z * inverse_nonzero_scale_factor,
+      this.size * scale_factor
     );
   }
 

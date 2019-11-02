@@ -1,9 +1,9 @@
 {
   "name": "like-that-2020",
   "version": "1.0.0",
-  "description": "The third version of \"Like That\".",
+  "description": "Near-25th anniversary edition of \"Like That\".",
   "scripts": {
-    "generate": "node scripts/generate.js"
+    "build": "node scripts/generate.js"
   },
   "repository": {
     "type": "git",

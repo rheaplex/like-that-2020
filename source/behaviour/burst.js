@@ -38,10 +38,6 @@ class Behaviour {
     if (scale_factor === 0) {
       return; 
     }
-    const side_length = this.size * scale_factor;
-    if (side_length > this.size) {
-      side_length = this.size;
-    }
     form.setState(
       this.x * scale_factor,
       this.y * scale_factor,

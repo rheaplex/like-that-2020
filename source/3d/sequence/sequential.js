@@ -51,7 +51,7 @@ class Sequence {
 	    new Behaviour(
    	      randomFloat(this.min_object_x, this.max_object_x),
    	      randomFloat(this.min_object_y, this.max_object_y), 
-   	      0.0, //randomFloat(this.min_object_z, this.max_object_z), 
+   	      randomFloat(this.min_object_z, this.max_object_z), 
    	      randomFloat(this.min_object_size, this.max_object_size), 
 	      start_growing + (growing_range * t_factor),
 	      stop_growing,
