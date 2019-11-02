@@ -181,7 +181,8 @@ const buildWorks = () => {
   Object.keys(WORKS).forEach(workName => {
     console.log('  ', workName);
     buildWork(workName);
-    list += `        <p><a href="${workPagePath(workName)}">${capitalize(workName)}</a> (${WORKS[workName].join(', ').replace('_', ' ')})</p>\n`;
+    const relativePath = `./${workName}/index.html`;
+    list += `        <p><a href="${relativePath}">${capitalize(workName)}</a> (${WORKS[workName].join(', ').replace('_', ' ')})</p>\n`;
   });
   buildListPage(list);
   fs.mkdirSync(path.join(BUILD_DIR, 'js'), { recursive: true });
